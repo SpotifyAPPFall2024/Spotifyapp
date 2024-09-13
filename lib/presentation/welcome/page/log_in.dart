@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spotifyapp/common/widgets/appbar/app_bar.dart';
 import 'package:spotifyapp/common/widgets/button/login_button.dart';
+import 'package:spotifyapp/core/utils/authentication_service.dart';
 import 'package:spotifyapp/presentation/home/page/home_page.dart';
 import 'package:spotifyapp/presentation/welcome/page/sign_up.dart';
 
@@ -39,11 +40,22 @@ class LogIn extends StatelessWidget {
                 height: 20,
               ),
               LoginButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
+                onPressed: () async {
+                  final authService = AuthenticationService();
+                  final accesstoken = await authService.login();
+                  if (accesstoken != null) {
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext context) => const HomePage()));
+                        builder: (BuildContext context) =>
+                            HomePage(accessToken: accesstoken),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Login failed')),
+                    );
+                  }
                 },
                 title: 'Log in',
                 height: 80,

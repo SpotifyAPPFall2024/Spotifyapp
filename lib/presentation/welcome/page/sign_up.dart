@@ -6,6 +6,7 @@ import 'package:spotifyapp/presentation/home/page/home_page.dart';
 import 'package:spotifyapp/presentation/welcome/page/log_in.dart';
 
 import '../../../core/configs/assets/app_vector.dart';
+import '../../../core/utils/authentication_service.dart';
 
 class SignUp extends StatelessWidget {
   const SignUp({super.key});
@@ -39,11 +40,23 @@ class SignUp extends StatelessWidget {
                 height: 20,
               ),
               LoginButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
+                onPressed: () async {
+                  final authService = AuthenticationService();
+                  final accessToken = await authService.login();
+                  if (accessToken != null) {
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext context) => const HomePage()));
+                        builder: (BuildContext context) =>
+                            HomePage(accessToken: accessToken),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Login failed')),
+                    );
+                  }
+                  ;
                 },
                 title: 'Create Account',
                 height: 80,
