@@ -118,10 +118,10 @@ class homeState extends State<HomePage> {
   Widget buildPlaylist(String title, String imageUrl, BuildContext context) {
     return Card(
       elevation: 4,
-      margin: EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
         leading: Image.network(imageUrl),
-        title: Text(title, style: TextStyle(fontSize: 18)),
+        title: Text(title, style: const TextStyle(fontSize: 18)),
         onTap: () {},
       ),
     );

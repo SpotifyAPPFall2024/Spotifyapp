@@ -23,3 +23,5 @@ plugins {
 }
 
 include ":app"
+include ':spotify-app-remote'
+project(':spotify-app-remote').projectDir = new File('C:/Users/Jamia/OneDrive - Kennesaw State University/Fall 2024/Senior Project/Spotify/spotifyapp/android/spotify-app-remote')

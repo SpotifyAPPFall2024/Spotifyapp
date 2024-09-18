@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:spotifyapp/core/configs/theme/app_theme.dart';
 import 'package:spotifyapp/core/utils/link_handler.dart';
 import 'package:spotifyapp/presentation/choose_mode/bloc/theme_cubit.dart';
+import 'package:spotifyapp/presentation/home/page/home_page.dart';
 import 'package:spotifyapp/presentation/splash/pages/splash.dart';
 
 Future<void> main() async {
@@ -32,12 +33,19 @@ class MyApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: mode,
             debugShowCheckedModeBanner: false,
-            home: const SplashPage()),
+            home: const SplashPage(),
+            navigatorKey: navigatorKey,
+        ),
       ),
     );
   }
 }
+final GlobalKey<NavigatorState>navigatorKey = GlobalKey<NavigatorState>();
 
+void navigateToHome(String accessToken){
+  navigatorKey.currentState?.pushReplacement(MaterialPageRoute(builder: (context)=>HomePage(accessToken: accessToken),),
+  );
+}
 //   // This widget is the root of your application.
 //   @override
 //   Widget build(BuildContext context) {

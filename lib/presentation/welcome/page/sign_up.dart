@@ -56,7 +56,6 @@ class SignUp extends StatelessWidget {
                       const SnackBar(content: Text('Login failed')),
                     );
                   }
-                  ;
                 },
                 title: 'Create Account',
                 height: 80,
