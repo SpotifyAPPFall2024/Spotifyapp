@@ -12,15 +12,19 @@ class AuthenticationService {
 
   AuthenticationService({
     this.clientId = '905df89fc43547469d85ece7a82de400',
-    this.redirectUri = 'myappspoof://callback',
-    this.scope = 'user-read-private user-read-email',
+    this.redirectUri = 'http://localhost:50677/callback',
+    //this.redirectUri = 'myappspoof://callback',
+    this.scope =
+        'user-read-private user-read-email playlist-read-private playlist-modify-private user-read-playback-state user-modify-playback-state user-library-read user-library-modify user-top-read user-read-recently-played',
   });
 
   // Generate a random string
   String _generateRandomString(int length) {
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const possible =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     final random = Random.secure();
-    final values = List<int>.generate(length, (i) => random.nextInt(possible.length));
+    final values =
+        List<int>.generate(length, (i) => random.nextInt(possible.length));
     return values.map((e) => possible[e]).join();
   }
 
@@ -33,7 +37,11 @@ class AuthenticationService {
 
   // Encode bytes in Base64 URL format
   String _base64UrlEncode(Uint8List input) {
-    return base64Url.encode(input).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+    return base64Url
+        .encode(input)
+        .replaceAll('=', '')
+        .replaceAll('+', '-')
+        .replaceAll('/', '_');
   }
 
   // Generate the authorization URL
@@ -93,24 +101,99 @@ class AuthenticationService {
       return null;
     }
   }
-  Future<String?> login() async {
 
-
-  }
+  Future<String?> login() async {}
   Future<List<dynamic>> fetchFeaturedPlaylist(String accessToken) async {
-      final response = await http.get(
-        Uri.parse('https://api.spotify.com/v1/browse/featured-playlists'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['playlists']['items'];
-      } else {
-        throw Exception('Failed to load featured playlists');
-      }
+    final response = await http.get(
+      Uri.parse(
+          'https://api.spotify.com/v1/browse/featured-playlists?limit=10'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['playlists']['items'];
+    } else {
+      throw Exception('Failed to load featured playlists');
     }
+  }
+
+  Future<List<dynamic>> fetchRecentPlays(String accessToken) async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.spotify.com/v1/me/player/recently-played?limit=20'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['items'];
+    } else {
+      throw Exception('Falied to load recent plays');
+    }
+  }
+
+  Future<List<dynamic>> fetchTopMixes(String accessToken) async {
+    final response = await http.get(
+      Uri.parse('https://api.spotify.com/v1/me/top/tracks?limit=15'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['items'];
+    } else {
+      throw Exception('Falied to load top mixes');
+    }
+  }
+
+  Future<List<dynamic>> fetchPlaylists(String accessToken) async {
+    final response = await http.get(
+      Uri.parse('https://api.spotify.com/v1/me/playlists'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['items'];
+    } else {
+      throw Exception('Falied to load top mixes');
+    }
+  }
+
+  // Future<List<dynamic>> fetchTopMixes(String accessToken) async {
+  //   final response = await http.get(
+  //     Uri.parse('https://api.spotify.com/v1/me/top/tracks?limit=15'),
+  //     headers: {
+  //       'Authorization': 'Bearer $accessToken',
+  //     },
+  //   );
+  //   if (response.statusCode == 200) {
+  //     final data = jsonDecode(response.body);
+  //     return data['items'];
+  //   } else {
+  //     throw Exception('Falied to load top mixes');
+  //   }
+  // }
+
+  Future<List<dynamic>> fetchJumpBackIn(String accessToken) async {
+    final response = await http.get(
+      Uri.parse('https://api.spotify.com/v1/me/playlists'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['items'];
+    } else {
+      throw Exception('Falied to load jump back in playlists');
+    }
+  }
 }
 
 
