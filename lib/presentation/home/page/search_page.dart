@@ -1,6 +1,7 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:spotifyapp/common/helpers/dark_mode.dart';
+import 'package:spotifyapp/common/widgets/playlistspage/playlists_page.dart';
+import 'package:spotifyapp/core/utils/authentication_service.dart';
 import 'package:spotifyapp/presentation/home/page/album_page.dart';
 import 'package:spotifyapp/presentation/home/page/artist_page.dart';
 import 'package:spotifyapp/presentation/home/page/player_page.dart';
@@ -8,145 +9,244 @@ import 'package:spotifyapp/presentation/home/page/player_page.dart';
 class SearchPage extends StatefulWidget {
   final String accessToken;
 
-  const SearchPage({required this.accessToken, super.key});
+  const SearchPage({required this.accessToken, Key? key}) : super(key: key);
 
   @override
   SearchPageState createState() => SearchPageState();
 }
 
 class SearchPageState extends State<SearchPage> {
-  final TextEditingController searchControl = TextEditingController();
-  List<dynamic> results = [];
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
+  String searchTerm = '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: searchControl,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(30.0),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  searchTerm = value;
+                });
+              },
               decoration: InputDecoration(
-                hintText: 'Search for tracks, albums, and artists...',
+                hintText: 'Search for songs, artists, albums...',
+                filled: true,
+                fillColor: context.isDarkMode
+                    ? Colors.white.withOpacity(0.03)
+                    : Colors.black.withOpacity(0.03),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
+                ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
-                    if (searchControl.text.isNotEmpty) {
-                      search(searchControl.text);
-                    }
+                    setState(() {
+                      searchTerm = '';
+                    });
                   },
                 ),
               ),
             ),
-            const SizedBox(height: 16.0),
-            Expanded(
-              child: ListView.builder(
-                itemCount: results.length,
-                itemBuilder: (context, index) {
-                  final item = results[index];
-                  String imageUrl = '';
-                  if (item['type'] == 'track') {
-                    imageUrl = item['album']['images'].isNotEmpty
-                        ? item['album']['images'][0]['url']
-                        : '';
-                  } else if (item['type'] == 'album') {
-                    imageUrl = item['images'].isNotEmpty
-                        ? item['images'][0]['url']
-                        : '';
-                  } else if (item['type'] == 'artist') {
-                    imageUrl = item['images'].isNotEmpty
-                        ? item['images'][0]['url']
-                        : '';
-                  }
-                  return ListTile(
-                    leading: imageUrl.isNotEmpty
-                        ? ClipRRect(
-                            child: Image.network(
-                              imageUrl,
-                              width: 30,
-                              height: 30,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.error),
-                            ),
-                          )
-                        : const Icon(Icons.music_note),
-                    title: Text(item['name']),
-                    subtitle: Text(item['type'] == 'track'
-                        ? item['artists']
-                            .map((artist) => artist['name'])
-                            .join(', ')
-                        : item['type'] == 'album'
-                            ? item['artists']
-                                .map((artist) => artist['name'])
-                                .join(', ')
-                            : ''),
-                    onTap: () {
-                      if (item['type'] == 'track') {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PlayerPage(
-                                    trackID: item['id'],
-                                    trackIndex: index,
-                                    accessToken: widget.accessToken)));
-                      } else if (item['type'] == 'album') {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AlbumPage(
-                                    accessToken: widget.accessToken,
-                                    albumID: item['id'])));
-                      } else if (item['type'] == 'artist') {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ArtistPage(
-                                    artistID: item['id'],
-                                    accessToken: widget.accessToken)));
-                      }
-                    },
-                  );
-                },
+          ),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(25.0),
+        children: [
+          SearchSection(
+            title: 'Songs',
+            searchTerm: searchTerm,
+            accessToken: widget.accessToken,
+            type: 'track',
+            isTrack: true,
+          ),
+          const SizedBox(height: 25),
+          SearchSection(
+            title: 'Artists',
+            searchTerm: searchTerm,
+            accessToken: widget.accessToken,
+            type: 'artist',
+          ),
+          const SizedBox(height: 25),
+          SearchSection(
+            title: 'Albums',
+            searchTerm: searchTerm,
+            accessToken: widget.accessToken,
+            type: 'album',
+          ),
+          const SizedBox(height: 25),
+          SearchSection(
+            title: 'Playlists',
+            searchTerm: searchTerm,
+            accessToken: widget.accessToken,
+            type: 'playlist',
+          ),
+          const SizedBox(height: 25),
+          SearchSection(
+            title: 'Podcasts',
+            searchTerm: searchTerm,
+            accessToken: widget.accessToken,
+            type: 'show',
+          ),
+          const SizedBox(height: 25),
+          SearchSection(
+            title: 'Episodes',
+            searchTerm: searchTerm,
+            accessToken: widget.accessToken,
+            type: 'episode',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SearchSection extends StatelessWidget {
+  final String title;
+  final String searchTerm;
+  final String accessToken;
+  final String type;
+  final bool isTrack;
+
+  const SearchSection({
+    required this.title,
+    required this.searchTerm,
+    required this.accessToken,
+    required this.type,
+    this.isTrack = false,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+              fontSize: 30, fontWeight: FontWeight.bold), //Text for section
+        ),
+        const SizedBox(height: 20),
+        FutureBuilder<List<dynamic>>(
+          future: AuthenticationService()
+              .searchSpotify(searchTerm, accessToken, type),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No results found'));
+            } else {
+              final results = snapshot.data!;
+              return SizedBox(
+                height: 250,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: results.length,
+                  itemBuilder: (context, index) {
+                    final result = results[index];
+                    final title = result['name'];
+                    final imageUrl = isTrack
+                        ? result['album']['images'][0]['url']
+                        : result['images']?.isNotEmpty == true
+                            ? result['images'][0]['url']
+                            : 'https://via.placeholder.com/150';
+
+                    return buildResultCard(context, result, title, imageUrl);
+                  },
+                ),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget buildResultCard(
+      BuildContext context, dynamic item, String title, String imageUrl) {
+    return GestureDetector(
+      onTap: () {
+        if (item['type'] == 'track') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlayerPage(
+                trackID: item['id'],
+                trackIndex: 0,
+                accessToken: accessToken,
               ),
+            ),
+          );
+        } else if (item['type'] == 'album') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AlbumPage(
+                accessToken: accessToken,
+                albumID: item['id'],
+              ),
+            ),
+          );
+        } else if (item['type'] == 'artist') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ArtistPage(
+                artistID: item['id'],
+                accessToken: accessToken,
+              ),
+            ),
+          );
+        } else if (item['type'] == 'playlist') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlaylistsPage(
+                playlistID: item['id'],
+                accessToken: accessToken,
+              ),
+            ),
+          );
+        } else if (item['type'] == 'show') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlayerPage(
+                trackID: item['id'],
+                trackIndex: 0,
+                accessToken: accessToken,
+              ),
+            ),
+          );
+        }
+      },
+      child: Container(
+        width: 160,
+        margin: const EdgeInsets.only(right: 16.0),
+        child: Column(
+          children: [
+            Image.network(
+              imageUrl,
+              height: 180,
+              fit: BoxFit.cover,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 20),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> search(String query) async {
-    setState(() {
-      results = [];
-    });
-
-    final response = await http.get(
-      Uri.parse(
-          'https://api.spotify.com/v1/search?q=$query&type=track,album,artist&limit=5'),
-      headers: {
-        'Authorization': 'Bearer ${widget.accessToken}',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        results = data['tracks']['items'] +
-            data['albums']['items'] +
-            data['artists']['items'];
-      });
-    } else {
-      print('Failed to search: ${response.statusCode}');
-    }
   }
 }

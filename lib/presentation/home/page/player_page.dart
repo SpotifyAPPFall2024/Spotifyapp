@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:spotifyapp/presentation/features/widgets/queue_page.dart';
 
 class PlayerPage extends StatefulWidget {
   final String trackID;
@@ -173,6 +174,31 @@ class playerPageState extends State<PlayerPage> {
                   icon: const Icon(Icons.skip_next),
                   iconSize: 30,
                 )
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.favorite),
+                  iconSize: 15,
+                ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => QueuePage(
+                          trackID: trackDetails!['id'],
+                          accessToken: widget.accessToken,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add_outlined),
+                  iconSize: 15,
+                ),
               ],
             )
           ],

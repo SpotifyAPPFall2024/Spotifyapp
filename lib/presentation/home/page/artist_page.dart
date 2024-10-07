@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:spotifyapp/presentation/home/page/album_page.dart';
-import 'player_page.dart'; // Import your PlayerPage
+import 'player_page.dart';
 
 class ArtistPage extends StatefulWidget {
   final String artistID;
@@ -132,11 +132,11 @@ class ArtistPageState extends State<ArtistPage> {
           children: [
             Container(
               width: double.infinity,
-              height: 250, // Set desired height
+              height: 250,
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage(artistImage),
-                  fit: BoxFit.contain, // Use cover to fill the box
+                  fit: BoxFit.contain,
                 ),
               ),
             ),

@@ -12,7 +12,7 @@ class AuthenticationService {
 
   AuthenticationService({
     this.clientId = '905df89fc43547469d85ece7a82de400',
-    this.redirectUri = 'http://localhost:63562/callback',
+    this.redirectUri = 'http://localhost:51781/callback',
     //this.redirectUri = 'myappspoof://callback',
     this.scope =
         'user-read-private user-read-email playlist-read-private playlist-modify-private user-read-playback-state user-modify-playback-state user-library-read user-library-modify user-top-read user-read-recently-played user-follow-read',
@@ -224,6 +224,51 @@ class AuthenticationService {
       return data['artists']['items'];
     } else {
       throw Exception('Falied to load followed artists ${response.statusCode}');
+    }
+  }
+
+  Future<void> addToQueue(String accessToken, String trackUri,
+      {String? deviceId}) async {
+    final url = Uri.parse('https://api.spotify.com/v1/me/player/queue');
+    final response = await http.post(
+      url.replace(queryParameters: {
+        'uri': trackUri,
+        if (deviceId != null) 'device_id': deviceId,
+      }),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 204) {
+      print('Track added to queue successfully.');
+    } else {
+      print(
+          'Failed to add track to queue: ${response.statusCode}, ${response.body}');
+    }
+  }
+
+  Future<List<dynamic>> searchSpotify(
+      String query, String accessToken, String type) async {
+    final url = Uri.https('api.spotify.com', '/v1/search', {
+      'q': query,
+      'type': type,
+      'limit': '10',
+    });
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['${type}s']['items'];
+    } else {
+      throw Exception('Failed to search Spotify API');
     }
   }
 }
