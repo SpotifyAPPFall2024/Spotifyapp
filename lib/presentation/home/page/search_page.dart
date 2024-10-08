@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:spotifyapp/common/helpers/dark_mode.dart';
 import 'package:spotifyapp/common/widgets/playlistspage/playlists_page.dart';
 import 'package:spotifyapp/core/utils/authentication_service.dart';
+import 'package:spotifyapp/presentation/features/widgets/podcast_player.dart';
 import 'package:spotifyapp/presentation/home/page/album_page.dart';
 import 'package:spotifyapp/presentation/home/page/artist_page.dart';
 import 'package:spotifyapp/presentation/home/page/player_page.dart';
+import 'package:spotifyapp/presentation/home/page/podcast_page.dart';
 
 class SearchPage extends StatefulWidget {
   final String accessToken;
@@ -128,8 +130,7 @@ class SearchSection extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-              fontSize: 30, fontWeight: FontWeight.bold), //Text for section
+          style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 20),
         FutureBuilder<List<dynamic>>(
@@ -158,7 +159,8 @@ class SearchSection extends StatelessWidget {
                             ? result['images'][0]['url']
                             : 'https://via.placeholder.com/150';
 
-                    return buildResultCard(context, result, title, imageUrl);
+                    return buildResultCard(
+                        context, result, index, title, imageUrl);
                   },
                 ),
               );
@@ -169,8 +171,8 @@ class SearchSection extends StatelessWidget {
     );
   }
 
-  Widget buildResultCard(
-      BuildContext context, dynamic item, String title, String imageUrl) {
+  Widget buildResultCard(BuildContext context, dynamic item, int index,
+      String title, String imageUrl) {
     return GestureDetector(
       onTap: () {
         if (item['type'] == 'track') {
@@ -218,9 +220,19 @@ class SearchSection extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PlayerPage(
-                trackID: item['id'],
-                trackIndex: 0,
+              builder: (context) => PodcastPage(
+                showID: item['id'],
+                accessToken: accessToken,
+              ),
+            ),
+          );
+        } else if (item['type'] == 'episode') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PodcastPlayer(
+                showID: item['id'],
+                showIndex: index,
                 accessToken: accessToken,
               ),
             ),

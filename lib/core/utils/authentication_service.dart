@@ -12,13 +12,12 @@ class AuthenticationService {
 
   AuthenticationService({
     this.clientId = '905df89fc43547469d85ece7a82de400',
-    this.redirectUri = 'http://localhost:51781/callback',
+    this.redirectUri = 'http://localhost:60241/callback',
     //this.redirectUri = 'myappspoof://callback',
     this.scope =
         'user-read-private user-read-email playlist-read-private playlist-modify-private user-read-playback-state user-modify-playback-state user-library-read user-library-modify user-top-read user-read-recently-played user-follow-read',
   });
 
-  // Generate a random string
   String _generateRandomString(int length) {
     const possible =
         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -28,14 +27,12 @@ class AuthenticationService {
     return values.map((e) => possible[e]).join();
   }
 
-  // Hash a string using SHA-256
   Future<Uint8List> _sha256(String plain) async {
     final bytes = utf8.encode(plain);
     final digest = sha256.convert(bytes);
     return Uint8List.fromList(digest.bytes);
   }
 
-  // Encode bytes in Base64 URL format
   String _base64UrlEncode(Uint8List input) {
     return base64Url
         .encode(input)
@@ -44,13 +41,11 @@ class AuthenticationService {
         .replaceAll('/', '_');
   }
 
-  // Generate the authorization URL
   Future<Uri> getAuthorizationUrl() async {
     final codeVerifier = _generateRandomString(64);
     final hashed = await _sha256(codeVerifier);
     final codeChallenge = _base64UrlEncode(hashed);
 
-    // Store code verifier in secure storage
     final storage = FlutterSecureStorage();
     await storage.write(key: 'code_verifier', value: codeVerifier);
 
@@ -66,7 +61,6 @@ class AuthenticationService {
     );
   }
 
-  // Exchange authorization code for access token
   Future<String?> exchangeCodeForToken(String code) async {
     final storage = FlutterSecureStorage();
     final codeVerifier = await storage.read(key: 'code_verifier');
@@ -95,14 +89,12 @@ class AuthenticationService {
       final responseBody = jsonDecode(response.body);
       final accessToken = responseBody['access_token'];
       return accessToken;
-      // Store access token as needed
     } else {
       print('Failed to exchange code for token: ${response.body}');
       return null;
     }
   }
 
-  Future<String?> login() async {}
   Future<List<dynamic>> fetchFeaturedPlaylist(String accessToken) async {
     final response = await http.get(
       Uri.parse(

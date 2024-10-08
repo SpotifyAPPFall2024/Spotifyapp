@@ -7,7 +7,6 @@ import 'package:spotifyapp/presentation/home/page/home_page.dart';
 import 'package:spotifyapp/presentation/welcome/page/sign_up.dart';
 import 'package:app_links/app_links.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../../../core/configs/assets/app_vector.dart';
 
 class LogIn extends StatefulWidget {
@@ -121,31 +120,28 @@ class logInState extends State<LogIn> {
     await Future.delayed(Duration(minutes: 5));
 
     final code = await _handleLink();
-    if(code != null){
-      try{
-        final accessToken = code;//await authService.exchangeCodeForToken(code);
-        if(accessToken!=null){
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (BuildContext context) => HomePage(accessToken: accessToken),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('login failed')),
-          );
-        }
+    if (code != null) {
+      try {
+        final accessToken = code;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext context) =>
+                HomePage(accessToken: accessToken),
+          ),
+        );
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Error: $e')),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
         );
       }
-    } else{
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Authorization code missing')),
       );
     }
   }
+
   Future<String?> _handleLink() async {
     final AppLinks _appLinks = AppLinks();
     String? authorizationCode;
@@ -158,19 +154,12 @@ class logInState extends State<LogIn> {
       }
     });
 
-    // Wait for the initial link
     final Uri? initialLink = await _appLinks.getInitialLink();
-    if (initialLink != null && initialLink.queryParameters.containsKey('code')) {
+    if (initialLink != null &&
+        initialLink.queryParameters.containsKey('code')) {
       authorizationCode = initialLink.queryParameters['code'];
     }
 
-    // Return the authorization code
     return authorizationCode;
   }
-
-  String? _extractCodeFromUri(Uri uri) {
-    final code = uri.queryParameters['code'];
-    return code;
-  }
-
 }

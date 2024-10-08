@@ -76,7 +76,6 @@ class AlbumPage extends StatelessWidget {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      // Return the tracks from the album
       return data['tracks']['items'];
     } else {
       throw Exception('Failed to load tracks: ${response.statusCode}');

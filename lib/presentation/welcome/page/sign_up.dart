@@ -1,16 +1,21 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spotifyapp/common/widgets/appbar/app_bar.dart';
 import 'package:spotifyapp/common/widgets/button/login_button.dart';
 import 'package:spotifyapp/presentation/home/page/home_page.dart';
 import 'package:spotifyapp/presentation/welcome/page/log_in.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/configs/assets/app_vector.dart';
 import '../../../core/utils/authentication_service.dart';
 
-class SignUp extends StatelessWidget {
+class SignUp extends StatefulWidget {
   const SignUp({super.key});
+  @override
+  signUpState createState() => signUpState();
+}
 
+class signUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,23 +45,7 @@ class SignUp extends StatelessWidget {
                 height: 20,
               ),
               LoginButton(
-                onPressed: () async {
-                  final authService = AuthenticationService();
-                  final accessToken = await authService.login();
-                  if (accessToken != null) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                            HomePage(accessToken: accessToken),
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Login failed')),
-                    );
-                  }
-                },
+                onPressed: handleLogin,
                 title: 'Create Account',
                 height: 80,
               ),
@@ -113,5 +102,55 @@ class SignUp extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> handleLogin() async {
+    final authService = AuthenticationService();
+    final authURL = await authService.getAuthorizationUrl();
+    await launchUrl(authURL);
+    await Future.delayed(Duration(minutes: 5));
+
+    final code = await _handleLink();
+    if (code != null) {
+      try {
+        final accessToken = code;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext context) =>
+                HomePage(accessToken: accessToken),
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Authorization code missing')),
+      );
+    }
+  }
+
+  Future<String?> _handleLink() async {
+    final AppLinks _appLinks = AppLinks();
+    String? authorizationCode;
+
+    _appLinks.uriLinkStream.listen((Uri? link) {
+      if (link != null) {
+        if (link.queryParameters.containsKey('code')) {
+          authorizationCode = link.queryParameters['code'];
+        }
+      }
+    });
+
+    final Uri? initialLink = await _appLinks.getInitialLink();
+    if (initialLink != null &&
+        initialLink.queryParameters.containsKey('code')) {
+      authorizationCode = initialLink.queryParameters['code'];
+    }
+
+    return authorizationCode;
   }
 }

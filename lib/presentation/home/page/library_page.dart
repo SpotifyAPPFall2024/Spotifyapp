@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:spotifyapp/core/utils/authentication_service.dart';
-
 import '../../../common/widgets/playlistspage/playlist_tile.dart';
 import '../../../core/utils/create_section.dart';
 
@@ -31,23 +30,6 @@ class LibraryPageState extends State<LibraryPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Library'),
-        // bottom: PreferredSize(
-        //   preferredSize: Size.fromHeight(50.0),
-        //   child: Padding(
-        //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        //     child: TextField(
-        //       decoration: InputDecoration(
-        //         hintText: 'Search',
-        //         filled: true,
-        //         fillColor: Colors.black,
-        //         border: OutlineInputBorder(
-        //           borderRadius: BorderRadius.circular(30.0),
-        //           borderSide: BorderSide.none,
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ),
       ),
       body: SingleChildScrollView(
         child: Column(

@@ -93,11 +93,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget buildBody() {
     switch (currentNavigation) {
-      case 0: // Home
+      case 0:
         return buildHomeContent();
-      case 1: // Search
+      case 1:
         return SearchPage(accessToken: widget.accessToken);
-      case 2: // Your Library
+      case 2:
         return LibraryPage(accessToken: widget.accessToken);
       default:
         return Container();
