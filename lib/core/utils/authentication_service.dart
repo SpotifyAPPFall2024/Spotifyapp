@@ -11,8 +11,8 @@ class AuthenticationService {
   final String scope;
 
   AuthenticationService({
-    this.clientId = '995edf30465b4910ab22cd1239baeb26',
-    this.redirectUri = 'http://localhost:55137/callback',
+    this.clientId = '905df89fc43547469d85ece7a82de400',
+    this.redirectUri = 'http://localhost:61334/callback',
     //this.redirectUri = 'myappspoof://callback',
     this.scope =
         'user-read-private user-read-email playlist-read-private playlist-modify-private user-read-playback-state user-modify-playback-state user-library-read user-library-modify user-top-read user-read-recently-played user-follow-read',
@@ -21,7 +21,7 @@ class AuthenticationService {
   // Generate a random string
   String _generateRandomString(int length) {
     const possible =
-        'ABCDEFGHIJ/;KLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     final random = Random.secure();
     final values =
         List<int>.generate(length, (i) => random.nextInt(possible.length));
@@ -105,6 +105,7 @@ class AuthenticationService {
   Future<String?> login() async {
     return null;
   }
+
   Future<List<dynamic>> fetchFeaturedPlaylist(String accessToken) async {
     final response = await http.get(
       Uri.parse(

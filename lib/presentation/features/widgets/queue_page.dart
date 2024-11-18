@@ -8,7 +8,8 @@ class QueuePage extends StatefulWidget {
   final String trackID;
   final String accessToken;
 
-  const QueuePage({required this.trackID, required this.accessToken, super.key});
+  const QueuePage(
+      {required this.trackID, required this.accessToken, super.key});
 
   @override
   QueuePageState createState() => QueuePageState();
@@ -51,8 +52,8 @@ class QueuePageState extends State<QueuePage> {
               child: ListView(
                 children: [
                   ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
                     title: Row(
                       children: [
                         ClipRRect(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spotifyapp/common/widgets/appbar/app_bar.dart';
@@ -118,53 +120,56 @@ class logInState extends State<LogIn> {
     final authService = AuthenticationService();
     final authURL = await authService.getAuthorizationUrl();
     await launchUrl(authURL);
-    await Future.delayed(const Duration(minutes: 5));
 
     final code = await _handleLink();
-    if(code != null){
-      try{
-        final accessToken = code;//await authService.exchangeCodeForToken(code);
+    if (code != null) {
+      try {
+        final accessToken =
+            code; //await authService.exchangeCodeForToken(code);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (BuildContext context) => HomePage(accessToken: accessToken),
+            builder: (BuildContext context) =>
+                HomePage(accessToken: accessToken),
           ),
         );
-            } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Error: $e')),
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
         );
       }
-    } else{
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Authorization code missing')),
       );
     }
   }
+
   Future<String?> _handleLink() async {
     final AppLinks appLinks = AppLinks();
-    String? authorizationCode;
-
-    appLinks.uriLinkStream.listen((Uri? link) {
-      if (link != null) {
-        if (link.queryParameters.containsKey('code')) {
-          authorizationCode = link.queryParameters['code'];
-        }
-      }
-    });
+    final Completer<String?> authorizationCode = Completer<String?>();
 
     // Wait for the initial link
     final Uri? initialLink = await appLinks.getInitialLink();
-    if (initialLink != null && initialLink.queryParameters.containsKey('code')) {
-      authorizationCode = initialLink.queryParameters['code'];
+    if (initialLink != null &&
+        initialLink.queryParameters.containsKey('code')) {
+      authorizationCode.complete(initialLink.queryParameters['code']);
+    } else {
+      appLinks.uriLinkStream.listen((Uri? link) {
+        if (link != null) {
+          if (link.queryParameters.containsKey('code')) {
+            authorizationCode.complete(link.queryParameters['code']);
+          }
+        }
+      });
     }
 
     // Return the authorization code
-    return authorizationCode;
+    return authorizationCode.future;
   }
 
   String? _extractCodeFromUri(Uri uri) {
     final code = uri.queryParameters['code'];
     return code;
   }
-
 }
