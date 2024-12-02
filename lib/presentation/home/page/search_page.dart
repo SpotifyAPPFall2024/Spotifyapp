@@ -152,10 +152,10 @@ class SearchSection extends StatelessWidget {
                   itemCount: results.length,
                   itemBuilder: (context, index) {
                     final result = results[index];
-                    final title = result['name'];
+                    final title = result?['name'] ?? 'Unnamed';
                     final imageUrl = isTrack
                         ? result['album']['images'][0]['url']
-                        : result['images']?.isNotEmpty == true
+                        : result?['images']?.isNotEmpty == true
                             ? result['images'][0]['url']
                             : 'https://via.placeholder.com/150';
 

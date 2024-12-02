@@ -7,7 +7,6 @@ import 'package:spotifyapp/presentation/home/page/library_page.dart';
 import 'package:spotifyapp/presentation/home/page/player_page.dart';
 import 'package:spotifyapp/presentation/home/page/search_page.dart';
 
-
 import '../../../core/configs/assets/app_vector.dart';
 
 class HomePage extends StatefulWidget {
@@ -35,8 +34,6 @@ class _HomePageState extends State<HomePage> {
     topMixes = AuthenticationService().fetchTopMixes(widget.accessToken);
     jumpBackIn = AuthenticationService().fetchJumpBackIn(widget.accessToken);
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -108,8 +105,10 @@ class _HomePageState extends State<HomePage> {
         return LibraryPage(accessToken: widget.accessToken);
       case 3: //Collab Feature
         return CollabPage(
-          userName: 'YOUR_USER_NAME',          // Replace with actual username variable if available
-          userFollowers: 'YOUR_FOLLOWERS_COUNT', // Replace with actual followers variable if available
+          userName:
+              'YOUR_USER_NAME', // Replace with actual username variable if available
+          userFollowers:
+              'YOUR_FOLLOWERS_COUNT', // Replace with actual followers variable if available
           accessToken: widget.accessToken,
         );
       default:
@@ -118,83 +117,84 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildHomeContent() {
-    return FutureBuilder(
-      future: featuredPlaylist,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text("Error: ${snapshot.error}"));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('No data available'));
-        } else {
-          final playlists = snapshot.data!;
-          return ListView(
-            children: [
-              Container(
-                height: 200,
-                color: Colors.black,
-                child: PageView(
-                  children: playlists.map<Widget>((playlist) {
-                    final imageUrl = playlist['images'][0]['url'];
-                    return Image.network(imageUrl, fit: BoxFit.contain);
-                  }).toList(),
-                ),
-              ),
-              buildSection('Recent Plays', recentPlays),
-            ],
-          );
-        }
-      },
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
+      children: [
+        buildSectionTitle('Recommended Plays'),
+        FutureBuilder<List<dynamic>>(
+          future: topMixes,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(
+                  child: Text('No recommended plays available'));
+            } else {
+              final data = snapshot.data!;
+              return buildGrid(data);
+            }
+          },
+        ),
+        const SizedBox(height: 24),
+        buildSectionTitle('Recent Plays'),
+        FutureBuilder<List<dynamic>>(
+          future: recentPlays,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No recent plays available'));
+            } else {
+              final data = snapshot.data!;
+              return buildGrid(data);
+            }
+          },
+        ),
+      ],
     );
   }
 
-  Widget buildSection(String title, Future<List<dynamic>> items) {
+  Widget buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          FutureBuilder<List<dynamic>>(
-            future: items,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                final data = snapshot.data!;
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemCount: data.length,
-                  itemBuilder: (context, index) {
-                    final track = data[index]['track'];
-                    return track != null
-                        ? buildTrackCard(track)
-                        : const SizedBox();
-                  },
-                );
-              }
-            },
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
+    );
+  }
+
+  Widget buildGrid(List<dynamic> tracks) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: tracks.length,
+      itemBuilder: (context, index) {
+        final track =
+            tracks[index]['track'] ?? tracks[index]; // Adjust as needed
+        return buildTrackCard(track);
+      },
     );
   }
 
   Widget buildTrackCard(dynamic track) {
     final imageUrl = track['album']?['images']?.first?['url'];
     final trackID = track['id'];
+    if (track == null) {
+      return const SizedBox();
+    }
 
     return GestureDetector(
       onTap: () {

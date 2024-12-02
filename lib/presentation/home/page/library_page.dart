@@ -67,11 +67,11 @@ class LibraryPageState extends State<LibraryPage> {
                     itemBuilder: (context, index) {
                       final playlist = snapshot.data![index];
                       return PlaylistTile(
-                        name: playlist['name'],
-                        imageUrl: playlist['images'].isNotEmpty
+                        name: playlist?['name'] ?? 'Unnamed Playlist',
+                        imageUrl: playlist?['images']?.isNotEmpty == true
                             ? playlist['images'][0]['url']
                             : 'https://via.placeholder.com/150',
-                        id: playlist['id'],
+                        id: playlist?['id'] ?? 'Unknown ID',
                         accessToken: widget.accessToken,
                         type: 'playlist',
                       );

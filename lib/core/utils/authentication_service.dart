@@ -12,7 +12,7 @@ class AuthenticationService {
 
   AuthenticationService({
     this.clientId = '905df89fc43547469d85ece7a82de400',
-    this.redirectUri = 'http://localhost:63670/callback',
+    this.redirectUri = 'http://localhost:62692/callback',
     //this.redirectUri = 'myappspoof://callback',
     this.scope =
         'user-read-private user-read-email playlist-read-private playlist-modify-private user-read-playback-state user-modify-playback-state user-library-read user-library-modify user-top-read user-read-recently-played user-follow-read',
@@ -141,7 +141,7 @@ class AuthenticationService {
 
   Future<List<dynamic>> fetchTopMixes(String accessToken) async {
     final response = await http.get(
-      Uri.parse('https://api.spotify.com/v1/me/top/tracks?limit=15'),
+      Uri.parse('https://api.spotify.com/v1/me/top/tracks?limit=20'),
       headers: {
         'Authorization': 'Bearer $accessToken',
       },
