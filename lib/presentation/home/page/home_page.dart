@@ -7,6 +7,11 @@ import 'package:spotifyapp/presentation/home/page/library_page.dart';
 import 'package:spotifyapp/presentation/home/page/player_page.dart';
 import 'package:spotifyapp/presentation/home/page/search_page.dart';
 
+import 'package:http/http.dart' as http;
+
+
+import 'package:spotifyapp/presentation/home/page/popup_screen.dart';
+
 
 import '../../../core/configs/assets/app_vector.dart';
 
@@ -19,12 +24,23 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   int currentNavigation = 0;
   late Future<List<dynamic>> featuredPlaylist;
   late Future<List<dynamic>> recentPlays;
   late Future<List<dynamic>> topMixes;
   late Future<List<dynamic>> jumpBackIn;
+  
+  late AnimationController _queueController;
+
+  bool _isQueueVisible = false;
+  bool _isPopupVisible = false;
+
+  void _togglePopup() {
+    setState(() {
+      _isPopupVisible = !_isPopupVisible;
+    });
+  }
 
   @override
   void initState() {
@@ -34,9 +50,44 @@ class _HomePageState extends State<HomePage> {
     recentPlays = AuthenticationService().fetchRecentPlays(widget.accessToken);
     topMixes = AuthenticationService().fetchTopMixes(widget.accessToken);
     jumpBackIn = AuthenticationService().fetchJumpBackIn(widget.accessToken);
+
+    _queueController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
   }
 
+Future<void> addToQueue(String trackUri, String accessToken) async {
+    final response = await http.post(
+      Uri.parse('https://api.spotify.com/v1/me/player/queue?uri=$trackUri'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 204) {
+      print('Song added to queue');
+    } else {
+      throw Exception('Failed to add song to queue');
+    }
+  }
   
+@override
+  void dispose() {
+    _queueController.dispose();
+    super.dispose();
+  }
+
+  void _toggleQueue() {
+    setState(() {
+      _isQueueVisible = !_isQueueVisible;
+      if (_isQueueVisible) {
+        _queueController.forward();
+      } else {
+        _queueController.reverse();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +108,17 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(
               Icons.account_circle,
               color: context.isDarkMode
-                  ? Colors.white.withOpacity(0.03)
-                  : Colors.black.withOpacity(0.03),
+                  ? const Color(0xFF1DB954)
+                  : const Color(0xFF191414),
+            ),
+          ),
+          IconButton( // Queue Icon
+            onPressed: _togglePopup,
+            icon:Icon (
+              Icons.queue_music,
+              color: context.isDarkMode
+                ? const Color(0xFF1DB954)
+                : const Color(0xFF191414),
             ),
           ),
         ],
@@ -195,9 +255,11 @@ class _HomePageState extends State<HomePage> {
   Widget buildTrackCard(dynamic track) {
     final imageUrl = track['album']?['images']?.first?['url'];
     final trackID = track['id'];
+    final trackUri = track['uri'];
 
     return GestureDetector(
       onTap: () {
+        addToQueue(trackUri, widget.accessToken);
         Navigator.push(
           context,
           MaterialPageRoute(
