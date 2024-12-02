@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
 import 'package:spotifyapp/common/helpers/dark_mode.dart';
 import 'package:spotifyapp/core/utils/authentication_service.dart';
 import 'package:spotifyapp/presentation/features/widgets/collab.dart';
 import 'package:spotifyapp/presentation/home/page/library_page.dart';
 import 'package:spotifyapp/presentation/home/page/player_page.dart';
 import 'package:spotifyapp/presentation/home/page/search_page.dart';
-
-import 'package:http/http.dart' as http;
-
-
 import 'package:spotifyapp/presentation/home/page/popup_screen.dart';
-
 
 import '../../../core/configs/assets/app_vector.dart';
 
@@ -123,7 +119,16 @@ Future<void> addToQueue(String trackUri, String accessToken) async {
           ),
         ],
       ),
-      body: buildBody(),
+      body: Stack(
+        children: [
+          buildBody(),
+          PopupScreen(isVisible: _isPopupVisible,
+          accessToken: widget.accessToken,
+          playlistID: '44ydl0IWV156LjtcFKDrep', //put your PLaylistId here. 
+          //(You can find your playlist id from the url of actual playlist page)
+          ),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
           setState(() {
