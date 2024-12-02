@@ -20,8 +20,7 @@ class PopupScreen extends StatefulWidget {
   _PopupScreenState createState() => _PopupScreenState();
 }
 
-class _PopupScreenState extends State<PopupScreen>
-    with SingleTickerProviderStateMixin {
+class _PopupScreenState extends State<PopupScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -57,8 +56,7 @@ class _PopupScreenState extends State<PopupScreen>
 
   Future<List<dynamic>> fetchPlaylistTracks() async {
     final response = await http.get(
-      Uri.parse(
-          'https://api.spotify.com/v1/playlists/${widget.playlistID}/tracks'),
+      Uri.parse('https://api.spotify.com/v1/playlists/${widget.playlistID}/tracks'),
       headers: {
         'Authorization': 'Bearer ${widget.accessToken}',
       },
@@ -78,8 +76,7 @@ class _PopupScreenState extends State<PopupScreen>
 
   Future<void> removeTrackFromPlaylist(String trackUri) async {
     final response = await http.delete(
-      Uri.parse(
-          'https://api.spotify.com/v1/playlists/${widget.playlistID}/tracks'),
+      Uri.parse('https://api.spotify.com/v1/playlists/${widget.playlistID}/tracks'),
       headers: {
         'Authorization': 'Bearer ${widget.accessToken}',
         'Content-Type': 'application/json',
@@ -125,39 +122,26 @@ class _PopupScreenState extends State<PopupScreen>
                 child: Transform.translate(
                   offset: Offset(
                     isMobile
-                        ? MediaQuery.of(context).size.width -
-                            (MediaQuery.of(context).size.width * 1.0) *
-                                _animation.value // Adjusted for mobile
-                        : MediaQuery.of(context).size.width -
-                            (MediaQuery.of(context).size.width * 0.6) *
-                                _animation.value, // Adjusted for web
+                      ? MediaQuery.of(context).size.width - (MediaQuery.of(context).size.width * 1.0) * _animation.value // Adjusted for mobile
+                      : MediaQuery.of(context).size.width - (MediaQuery.of(context).size.width * 0.6) * _animation.value, // Adjusted for web
                     0,
                   ),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: isMobile
-                        ? MediaQuery.of(context).size.width *
-                            1.0 // screen width for mobile
-                        : MediaQuery.of(context).size.width *
-                            0.20, // 20% of screen width for web
-                    height: MediaQuery.of(context).size.height *
-                        1.0, // Full screen height
-                    color: Colors
-                        .grey[850], // Default Background color for the popup
+                        ? MediaQuery.of(context).size.width * 1.0// screen width for mobile
+                        : MediaQuery.of(context).size.width * 0.20, // 20% of screen width for web
+                    height: MediaQuery.of(context).size.height * 1.0, // Full screen height
+                    color: Colors.grey[850], // Default Background color for the popup
                     child: FutureBuilder<List<dynamic>>(
                       future: fetchPlaylistTracks(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
-                          return Center(
-                              child: Text('Error: ${snapshot.error}'));
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return const Center(
-                              child: Text('No tracks available'));
+                          return Center(child: Text('Error: ${snapshot.error}'));
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Center(child: Text('No tracks available'));
                         } else {
                           final tracks = snapshot.data!;
                           return ListView.builder(
@@ -172,26 +156,19 @@ class _PopupScreenState extends State<PopupScreen>
                                           ? Colors.grey[800]
                                           : Colors.grey[850],
                                       child: ListTile(
-                                        title: Text(
-                                            track['name'] ?? 'Unknown Track'),
-                                        subtitle: Text(
-                                            track['artists']?.isNotEmpty == true
-                                                ? track['artists'][0]['name']
-                                                : 'Unknown Artist'),
+                                        title: Text(track['name'] ?? 'Unknown Track'),
+                                        subtitle: Text(track['artists']?.isNotEmpty == true
+                                            ? track['artists'][0]['name']
+                                            : 'Unknown Artist'),
                                         trailing: IconButton(
-                                          icon: const Icon(
-                                              Icons.remove_circle_outline),
+                                          icon: const Icon(Icons.remove_circle_outline),
                                           onPressed: () async {
                                             try {
-                                              await removeTrackFromPlaylist(
-                                                  trackUri!);
+                                              await removeTrackFromPlaylist(trackUri!);
                                               setState(() {});
                                             } catch (error) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                    content: Text(
-                                                        'Failed to remove track')),
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Failed to remove track')),
                                               );
                                             }
                                           },
@@ -210,7 +187,7 @@ class _PopupScreenState extends State<PopupScreen>
                                         },
                                       ),
                                     )
-                                  : const SizedBox();
+                                  : const SizedBox(); 
                             },
                           );
                         }
