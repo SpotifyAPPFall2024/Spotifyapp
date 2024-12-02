@@ -45,7 +45,7 @@ class CollabPageState extends State<CollabPage> {
       TextEditingController(); //names collab playlist
   List<dynamic> userPlaylists = []; //holds users' playlist
   List<dynamic> playlistContents = []; //holds contents of user playlist
-
+  String? collabPlaylistID;
   @override
   void initState() {
     super.initState();
@@ -197,9 +197,15 @@ class CollabPageState extends State<CollabPage> {
                                 trailing: ElevatedButton(
                                   onPressed: () {
                                     //able to add songs to database once session established
-                                    if (activeSessionId != null) {
-                                      addSongToSession(
-                                          activeSessionId!, track, context);
+                                    if (activeSessionId == null) {
+                                      // addToCollaborativePlaylist(
+                                      //     collabPlaylistID!, trackUri);
+                                      addTrackToSpotifyPlaylist(
+                                          collabPlaylistID!,
+                                          trackUri,
+                                          widget.accessToken);
+                                      // addSongToSession(
+                                      //     activeSessionId!, track, context);
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -250,11 +256,12 @@ class CollabPageState extends State<CollabPage> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 //once clicked, collab playlist with given name is created
                 final collabName = userPlaylistName.text.trim();
                 if (collabName.isNotEmpty) {
-                  createCollaborativePlaylist(collabName);
+                  collabPlaylistID =
+                      await createCollaborativePlaylist(collabName);
                 }
                 Navigator.of(context).pop();
               },
@@ -266,8 +273,9 @@ class CollabPageState extends State<CollabPage> {
     );
   }
 
-  Future<void> createCollaborativePlaylist(String collabName) async {
+  Future<String> createCollaborativePlaylist(String collabName) async {
     //collab playlist added to list of user's playlists
+    collabPlaylistID = collabName;
     final url = 'https://api.spotify.com/v1/users/${userInfo?['id']}/playlists';
     final response = await http.post(
       Uri.parse(url),
@@ -284,16 +292,15 @@ class CollabPageState extends State<CollabPage> {
     );
 
     if (response.statusCode == 201) {
-      final playlistData = json.decode(response.body);
-      print('Collaborative playlist created: ${playlistData['name']}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Collaborative playlist created!')),
       );
+      final playlistData = json.decode(response.body);
+      return playlistData['id'];
+      //print('Collaborative playlist created: ${playlistData['name']}');
     } else {
-      print('Failed to create collaborative playlist: ${response.body}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to create playlist')),
-      );
+      throw Exception(
+          'Failed to create collaborative playlist. Status code: ${response.statusCode}');
     }
   }
 
@@ -871,6 +878,10 @@ class CollabPageState extends State<CollabPage> {
                       trailing: IconButton(
                         icon: Icon(Icons.add),
                         onPressed: () {
+                          // addToCollaborativePlaylist(
+                          //     collabPlaylistID!, track['uri']);
+                          addTrackToSpotifyPlaylist(collabPlaylistID!,
+                              track['uri'], widget.accessToken);
                           addSongToSession(sessionId, track['uri'], context);
                           Navigator.of(context)
                               .pop(); // Close dialog after adding song
